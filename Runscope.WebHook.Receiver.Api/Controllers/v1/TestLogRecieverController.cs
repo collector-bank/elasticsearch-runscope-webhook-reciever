@@ -14,10 +14,11 @@ namespace Runscope.WebHook.Receiver.Api
         private readonly List<ElasticLowLevelConnector> _testLogReceivers = new List<ElasticLowLevelConnector>();
         private readonly string _apiKey;
         private readonly List<string> _indexPrefixes = new List<string>();
+        private dynamic settings;
 
         public TestLogRecieverController()
         {
-            dynamic settings = JObject.Parse(System.IO.File.ReadAllText(System.IO.File.Exists("appsettings.Development.json") ? "appsettings.Development.json" : "appsettings.json"));
+            settings = JObject.Parse(System.IO.File.ReadAllText(System.IO.File.Exists("appsettings.Development.json") ? "appsettings.Development.json" : "appsettings.json"));
 
             var clusters = settings.ElasticsearchClusters;
             var usernames = settings.ElasticsearchUsernames;
@@ -41,6 +42,8 @@ namespace Runscope.WebHook.Receiver.Api
         [Route("{apikey}")]
         public ActionResult Post([FromBody] JObject body, [FromQuery] string apikey)
         {
+            var agentRegionName = settings.AgentRegionName;
+
             try
             {
                 if (apikey != _apiKey)
@@ -49,7 +52,7 @@ namespace Runscope.WebHook.Receiver.Api
                 }
 
                 var now = DateTime.Now;
-                var documentsAsStrings = DataFunctions.ProcessRequestData(body, now);
+                var documentsAsStrings = DataFunctions.ProcessRequestData(body, now, agentRegionName);
 
                 for (var cluster = 0; cluster < _testLogReceivers.Count; cluster++)
                 {

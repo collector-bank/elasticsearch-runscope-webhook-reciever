@@ -1,14 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
 
 namespace Runscope.WebHook.Receiver.Api
 {
     public static class DataFunctions
     {
-        public static string[] ProcessRequestData(JObject requestBody, DateTime now)
+        public static string[] ProcessRequestData(JObject requestBody, DateTime now, string agentRegionName)
         {
             var resultDocuments = new List<string>();
 
@@ -36,7 +36,7 @@ namespace Runscope.WebHook.Receiver.Api
             }
             if (requestBody["region_name"] != null)
             {
-                requestBody["region_name"] = PrettifyRegionName(requestBody["region_name"].ToString());
+                requestBody["region_name"] = PrettifyRegionName(requestBody["region_name"].ToString(), agentRegionName);
             }
             if (requestBody["variables"] != null && requestBody["variables"]["result"] != null && requestBody["variables"]["jsonresult"] == null)
             {
@@ -75,12 +75,8 @@ namespace Runscope.WebHook.Receiver.Api
             }
         }
 
-        public static string PrettifyRegionName(string regionName)
+        public static string PrettifyRegionName(string regionName, string agentRegionName)
         {
-            dynamic settings = JObject.Parse(System.IO.File.ReadAllText(System.IO.File.Exists("appsettings.Development.json") ? "appsettings.Development.json" : "appsettings.json"));
-
-            var agentRegionName = settings.AgentRegionName;
-
             if (regionName == "None - None")
             {
                 return agentRegionName;

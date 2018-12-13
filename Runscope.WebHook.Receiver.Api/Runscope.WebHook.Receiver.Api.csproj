@@ -8,10 +8,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Collector.Serilog.Enrichers.Assembly" Version="1.0.1" />
+    <PackageReference Include="Collector.Serilog.Enrichers.Author" Version="1.0.2" />
+    <PackageReference Include="Collector.Serilog.Enrichers.AzureWebApps" Version="2.0.0" />
+    <PackageReference Include="Collector.Serilog.Sinks.AzureEventHub" Version="2.0.2" />
+    <PackageReference Include="Destructurama.Attributed" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
     <PackageReference Include="NEST" Version="6.4.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+    <PackageReference Include="Serilog" Version="2.7.1" />
+    <PackageReference Include="Serilog.Exceptions" Version="4.1.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
   </ItemGroup>
 
   <ItemGroup>

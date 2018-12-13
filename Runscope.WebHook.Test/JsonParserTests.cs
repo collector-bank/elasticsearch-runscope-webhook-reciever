@@ -35,7 +35,8 @@ namespace Runscope.WebHook.Test
             string content = GetJsonContent("payload.json");
             var payload = JObject.Parse(content);
             ((JObject)payload["variables"]).Remove("result");
-            var result = DataFunctions.ProcessRequestData(payload, DateTime.Now);
+            string agentRegionName = "MegaCityOne";
+            var result = DataFunctions.ProcessRequestData(payload, DateTime.Now, agentRegionName);
             Assert.AreEqual(1, result.Length);
             var jsonresult = JObject.Parse(result[0]);
             Assert.AreEqual(null, jsonresult["requests"]);
@@ -48,7 +49,9 @@ namespace Runscope.WebHook.Test
         [TestCase("None - None", "MegaCityOne")]
         public void TestRegionNamePrettification(string regionName, string expectedPrettified)
         {
-            Assert.AreEqual(expectedPrettified, DataFunctions.PrettifyRegionName(regionName));
+            string agentRegionName = "MegaCityOne";
+
+            Assert.AreEqual(expectedPrettified, DataFunctions.PrettifyRegionName(regionName, agentRegionName));
         }
 
         [Test]
@@ -56,7 +59,8 @@ namespace Runscope.WebHook.Test
         {
             string content = GetJsonContent("payload.json");
             var payload = JObject.Parse(content);
-            string[] result = DataFunctions.ProcessRequestData(payload, DateTime.Now);
+            string agentRegionName = "MegaCityOne";
+            string[] result = DataFunctions.ProcessRequestData(payload, DateTime.Now, agentRegionName);
             Assert.AreEqual(6, result.Length);
         }
 
@@ -66,7 +70,8 @@ namespace Runscope.WebHook.Test
             string content = GetJsonContent("payload.json");
             var payload = JObject.Parse(content);
             ((JObject)payload["variables"]).Remove("result");
-            string[] result = DataFunctions.ProcessRequestData(payload, DateTime.Now);
+            string agentRegionName = "MegaCityOne";
+            string[] result = DataFunctions.ProcessRequestData(payload, DateTime.Now, agentRegionName);
             Assert.AreEqual(1, result.Length);
         }
 
