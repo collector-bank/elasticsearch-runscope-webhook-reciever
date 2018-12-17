@@ -30,20 +30,34 @@ namespace Runscope.WebHook.Test
         }
 
         [Test]
+        public void TestEmptyRequest()
+        {
+            JObject emptyObject = JObject.Parse("{}");
+            string agentRegionName = "MegaCityOne";
+            DateTime now = new DateTime(2018, 1, 1);
+            var results = DataFunctions.ProcessRequestData(emptyObject, agentRegionName, now, out DateTime testTime);
+
+            Assert.AreEqual(1, results.Length);
+            Assert.AreEqual(2, results[0].Length);
+            Assert.AreEqual(now, testTime);
+        }
+
+        [Test]
         public void TestLastRequest()
         {
             string content = GetJsonContent("payload.json");
             var payload = JObject.Parse(content);
             ((JObject)payload["variables"]).Remove("result");
             string agentRegionName = "MegaCityOne";
-            var result = DataFunctions.ProcessRequestData(payload, DateTime.Now, agentRegionName);
+            DateTime now = new DateTime(2018, 1, 1);
+            var result = DataFunctions.ProcessRequestData(payload, agentRegionName, now, out DateTime testTime);
             Assert.AreEqual(1, result.Length);
             var jsonresult = JObject.Parse(result[0]);
             Assert.AreEqual(null, jsonresult["requests"]);
             Assert.AreNotEqual(null, jsonresult["request"]);
             Assert.AreEqual("https://api.runscope2.com/", jsonresult["request"]["url"].Value<string>());
+            Assert.AreEqual(new DateTime(2013, 11, 12, 18, 35, 08, 548), testTime);
         }
-
 
         [TestCase("US East - Northern Virginia", "Northern Virginia")]
         [TestCase("None - None", "MegaCityOne")]
@@ -60,8 +74,10 @@ namespace Runscope.WebHook.Test
             string content = GetJsonContent("payload.json");
             var payload = JObject.Parse(content);
             string agentRegionName = "MegaCityOne";
-            string[] result = DataFunctions.ProcessRequestData(payload, DateTime.Now, agentRegionName);
+            DateTime now = new DateTime(2018, 1, 1);
+            string[] result = DataFunctions.ProcessRequestData(payload, agentRegionName, now, out DateTime testTime);
             Assert.AreEqual(6, result.Length);
+            Assert.AreEqual(new DateTime(2013, 11, 12, 18, 35, 08, 548), testTime);
         }
 
         [Test]
@@ -71,8 +87,10 @@ namespace Runscope.WebHook.Test
             var payload = JObject.Parse(content);
             ((JObject)payload["variables"]).Remove("result");
             string agentRegionName = "MegaCityOne";
-            string[] result = DataFunctions.ProcessRequestData(payload, DateTime.Now, agentRegionName);
+            DateTime now = new DateTime(2018, 1, 1);
+            string[] result = DataFunctions.ProcessRequestData(payload, agentRegionName, now, out DateTime testTime);
             Assert.AreEqual(1, result.Length);
+            Assert.AreEqual(new DateTime(2013, 11, 12, 18, 35, 08, 548), testTime);
         }
 
         [Test]

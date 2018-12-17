@@ -8,7 +8,7 @@ namespace Runscope.WebHook.Receiver.Api
 {
     public static class DataFunctions
     {
-        public static string[] ProcessRequestData(JObject requestBody, DateTime now, string agentRegionName)
+        public static string[] ProcessRequestData(JObject requestBody, string agentRegionName, DateTime now, out DateTime testTime)
         {
             var resultDocuments = new List<string>();
 
@@ -24,11 +24,18 @@ namespace Runscope.WebHook.Receiver.Api
             }
             if (requestBody["started_at"] != null)
             {
-                requestBody["started_at"] = ConvertTimeFromTicksToDateTime(requestBody, "started_at");
+                var started_at = ConvertTimeFromSecondsSince1970ToDateTime(requestBody, "started_at");
+                requestBody["started_at"] = started_at.ToString("o");
+                testTime = started_at;
+            }
+            else
+            {
+                testTime = now;
             }
             if (requestBody["finished_at"] != null)
             {
-                requestBody["finished_at"] = ConvertTimeFromTicksToDateTime(requestBody, "finished_at");
+                var finished_at = ConvertTimeFromSecondsSince1970ToDateTime(requestBody, "finished_at");
+                requestBody["finished_at"] = finished_at.ToString("o");
             }
             if (requestBody["reported_at"] != null)
             {
@@ -108,9 +115,9 @@ namespace Runscope.WebHook.Receiver.Api
             return true;
         }
 
-        public static string ConvertTimeFromTicksToDateTime(JObject requestBody, string path)
+        public static DateTime ConvertTimeFromSecondsSince1970ToDateTime(JObject requestBody, string path)
         {
-            return new DateTime(1970, 1, 1, 0, 0, 0).AddSeconds((double)requestBody[path]).ToString("o");
+            return new DateTime(1970, 1, 1, 0, 0, 0).AddSeconds((double)requestBody[path]);
         }
     }
 }

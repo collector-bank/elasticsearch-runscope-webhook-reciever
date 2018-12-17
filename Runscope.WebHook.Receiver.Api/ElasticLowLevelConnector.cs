@@ -10,8 +10,9 @@ namespace Runscope.WebHook.Receiver.Api
     public class ElasticLowLevelConnector
     {
         private readonly ElasticLowLevelClient _client;
+        private readonly string _indexPrefix;
 
-        public ElasticLowLevelConnector(string node, string username, string password)
+        public ElasticLowLevelConnector(string node, string username, string password, string indexPrefix)
         {
             var uri = new Uri(node);
 
@@ -20,6 +21,8 @@ namespace Runscope.WebHook.Receiver.Api
             settings.RequestTimeout(new TimeSpan(0, 0, 0, 0, 90000));
             settings.BasicAuthentication(username, password);
             _client = new ElasticLowLevelClient(settings);
+
+            _indexPrefix = indexPrefix;
         }
 
         public void BulkInsertToElastic(IEnumerable<LowLevelMessage> objects)
@@ -28,7 +31,7 @@ namespace Runscope.WebHook.Receiver.Api
 
             foreach (var lowLevelMessage in objects)
             {
-                var action = new { index = new { _index = lowLevelMessage.Index, _type = lowLevelMessage.Type } };
+                var action = new { index = new { _index = $"{_indexPrefix}{lowLevelMessage.Date:yyyy.MM}", _type = lowLevelMessage.Type } };
                 payloads.Add(JsonConvert.SerializeObject(action, Formatting.None));
                 payloads.Add(lowLevelMessage.Body);
             }
@@ -40,7 +43,7 @@ namespace Runscope.WebHook.Receiver.Api
 
     public class LowLevelMessage
     {
-        public string Index { get; set; }
+        public DateTime Date { get; set; }
 
         public string Type { get; set; }
 

@@ -32,6 +32,14 @@ namespace Runscope.WebHook.Receiver.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Latest);
+
+            services.AddTransient<ILogger>();
+
+
+            dynamic settings = LoadAppSettings();
+
+            services.AddTransient(a => new ApiKey() { Key = settings.ApiKey });
+            services.AddTransient(a => new AgentRegionName() { RegionName = settings.AgentRegionName });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -57,9 +65,26 @@ namespace Runscope.WebHook.Receiver.Api
             string serilogDepartment = settings?.SerilogDepartment ?? "Unknown department";
 
             ILogger logger = ConfigureLogging(eventHubConnectionString, serilogTeamName, serilogDepartment);
+
+
+            string[] clusters = settings.ElasticsearchClusters.ToObject<string[]>();
+            string[] usernames = settings.ElasticsearchUsernames.ToObject<string[]>();
+            string[] passwords = settings.ElasticsearchPasswords.ToObject<string[]>();
+            string[] indexPrefixes = settings.ElasticsearchIndexPrefixes.ToObject<string[]>();
+
+            var testLogReceivers = new List<ElasticLowLevelConnector>();
+
+            for (var cluster = 0; cluster < clusters.Length; cluster++)
+            {
+                testLogReceivers.Add(new ElasticLowLevelConnector(
+                    clusters[cluster],
+                    GetIndexedOrFirst(usernames, cluster),
+                    GetIndexedOrFirst(passwords, cluster),
+                    GetIndexedOrFirst(indexPrefixes, cluster)));
+            }
         }
 
-        static JObject LoadAppSettings()
+        JObject LoadAppSettings()
         {
             string configfile = "appsettings.development.json";
             if (System.IO.File.Exists(configfile))
@@ -114,7 +139,7 @@ namespace Runscope.WebHook.Receiver.Api
             {
                 Console.WriteLine($"Using event hub for logging: >>>{eventHubConnectionString}<<<");
                 var eventHub = EventHubClient.CreateFromConnectionString(eventHubConnectionString);
-                config = config.WriteTo.Sink(new AzureEventHubSink(eventHub));
+                config = config.WriteTo.Sink(new AzureEventHubBatchingSink(eventHub, new TimeSpan(0, 0, 4)));
             }
 
             ILogger logger = config.CreateLogger();
@@ -126,7 +151,7 @@ namespace Runscope.WebHook.Receiver.Api
             return logger;
         }
 
-        static string GetAppVersion()
+        string GetAppVersion()
         {
             if (typeof(Program).Assembly.GetCustomAttributes(false).SingleOrDefault(o => o.GetType() == typeof(AssemblyFileVersionAttribute)) is AssemblyFileVersionAttribute versionAttribute)
             {
@@ -136,6 +161,11 @@ namespace Runscope.WebHook.Receiver.Api
             {
                 return string.Empty;
             }
+        }
+
+        string GetIndexedOrFirst(string[] array, int index)
+        {
+            return index < array.Length ? array[index] : array[0];
         }
     }
 }

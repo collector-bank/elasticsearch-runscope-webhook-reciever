@@ -5,44 +5,31 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using Serilog;
 
 namespace Runscope.WebHook.Receiver.Api
 {
     [ApiController]
     public class TestLogRecieverController : ControllerBase
     {
-        private readonly List<ElasticLowLevelConnector> _testLogReceivers = new List<ElasticLowLevelConnector>();
+        private readonly ILogger _logger;
         private readonly string _apiKey;
-        private readonly List<string> _indexPrefixes = new List<string>();
-        private dynamic settings;
+        private readonly string _agentRegionName;
+        private readonly ElasticLowLevelConnector[] _testLogReceivers;
 
-        public TestLogRecieverController()
+        public TestLogRecieverController(ILogger logger, ApiKey apiKey, AgentRegionName agentRegionName, ElasticLowLevelConnector[] TestLogReceivers)
         {
-            settings = JObject.Parse(System.IO.File.ReadAllText(System.IO.File.Exists("appsettings.Development.json") ? "appsettings.Development.json" : "appsettings.json"));
-
-            var clusters = settings.ElasticsearchClusters;
-            var usernames = settings.ElasticsearchUsernames;
-            var passwords = settings.ElasticsearchPasswords;
-            var indexprefixes = settings.ElasticsearchIndexPrefixes;
-
-            _indexPrefixes.AddRange(indexprefixes.Split(','));
-
-
-            for (var cluster = 0; cluster < clusters.Split(',').Length; cluster++)
-            {
-                _testLogReceivers.Add(new ElasticLowLevelConnector(clusters.Split(',')[cluster],
-                    GetIndexedOrFirst(usernames.Split(',').ToList(), cluster),
-                    GetIndexedOrFirst(passwords.Split(',').ToList(), cluster)));
-            }
-
-            _apiKey = settings.ApiKey;
+            _logger = logger;
+            _apiKey = apiKey.Key;
+            _agentRegionName = agentRegionName.RegionName;
+            _testLogReceivers = TestLogReceivers;
         }
 
         [HttpPost]
         [Route("{apikey}")]
-        public ActionResult Post([FromBody] JObject body, [FromQuery] string apikey)
+        public ActionResult Post([FromBody] JObject body, [FromRoute] string apikey)
         {
-            var agentRegionName = settings.AgentRegionName;
+            _logger.Information("Request: {apikey} {body}", apikey, body);
 
             try
             {
@@ -51,13 +38,13 @@ namespace Runscope.WebHook.Receiver.Api
                     return Unauthorized();
                 }
 
-                var now = DateTime.Now;
-                var documentsAsStrings = DataFunctions.ProcessRequestData(body, now, agentRegionName);
+                DateTime now = DateTime.Now;
 
-                for (var cluster = 0; cluster < _testLogReceivers.Count; cluster++)
+                var documentsAsStrings = DataFunctions.ProcessRequestData(body, _agentRegionName, now, out DateTime testTime);
+
+                for (var cluster = 0; cluster < _testLogReceivers.Length; cluster++)
                 {
                     var receiver = _testLogReceivers[cluster];
-                    var indexPrefix = GetIndexedOrFirst(_indexPrefixes, cluster);
                     var list = new List<LowLevelMessage>();
 
                     foreach (var documentAsString in documentsAsStrings)
@@ -65,7 +52,7 @@ namespace Runscope.WebHook.Receiver.Api
                         list.Add(new LowLevelMessage
                         {
                             Body = documentAsString,
-                            Index = $"{indexPrefix}{now:yyyy.MM}",
+                            Date = testTime,
                             Type = "runscope"
                         });
                     }
@@ -80,21 +67,20 @@ namespace Runscope.WebHook.Receiver.Api
                     }
                 }
 
+                _logger.Information("Result ok");
+
                 return Ok();
             }
             catch (ArgumentException ex)
             {
+                _logger.Error("{exception}", ex);
                 return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
+                _logger.Error("{exception}", ex);
                 return new ContentResult { StatusCode = StatusCodes.Status500InternalServerError, Content = ex.ToString() };
             }
-        }
-
-        private string GetIndexedOrFirst(List<string> list, int index)
-        {
-            return index < list.Count ? list[index] : list[0];
         }
     }
 }
