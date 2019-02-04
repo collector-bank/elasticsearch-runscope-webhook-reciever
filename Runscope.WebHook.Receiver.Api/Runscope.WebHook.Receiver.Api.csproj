@@ -7,6 +7,8 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
+    <IsPackable>true</IsPackable>
+    <NoWarn>1701;1702;NU5100</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,6 +30,10 @@
     <Content Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="bin/Release/netcoreapp2.2/win-x64/publish/*" Pack="True" PackagePath="" />
   </ItemGroup>
 
 </Project>
