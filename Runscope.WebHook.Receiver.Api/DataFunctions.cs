@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Runscope.WebHook.Receiver.Api
 {
@@ -90,7 +90,7 @@ namespace Runscope.WebHook.Receiver.Api
             }
             else if (regionName.EndsWith(" - None"))
             {
-                return regionName.Substring(0, regionName.Length - 7);
+                return regionName[0..^7];
             }
             else if (regionName.Contains(" - "))
             {

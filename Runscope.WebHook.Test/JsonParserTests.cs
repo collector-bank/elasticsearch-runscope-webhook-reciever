@@ -19,13 +19,10 @@ namespace Runscope.WebHook.Test
             {
                 var assembly = Assembly.GetExecutingAssembly();
 
-                using (Stream stream = assembly.GetManifestResourceStream($"{assembly.GetName().Name}.{filename}"))
-                {
-                    using (StreamReader reader = new StreamReader(stream))
-                    {
-                        return reader.ReadToEnd();
-                    }
-                }
+                var resourceName = $"{assembly.GetName().Name}.{filename}";
+                using var stream = assembly.GetManifestResourceStream(resourceName);
+                using var reader = new StreamReader(stream);
+                return reader.ReadToEnd();
             }
         }
 

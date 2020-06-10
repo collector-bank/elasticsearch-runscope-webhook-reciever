@@ -1,29 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
-    <AspNetCoreModuleName>AspNetCoreModule</AspNetCoreModuleName>
-    <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsAsErrors />
-    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <IsPackable>true</IsPackable>
-    <NoWarn>1701;1702;NU5100</NoWarn>
+    <NoWarn>NU5100</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Collector.Serilog.Enrichers.Assembly" Version="1.0.1" />
-    <PackageReference Include="Collector.Serilog.Enrichers.Author" Version="1.0.2" />
-    <PackageReference Include="Collector.Serilog.Enrichers.AzureWebApps" Version="2.0.0" />
-    <PackageReference Include="Collector.Serilog.Sinks.AzureEventHub" Version="3.0.0" />
-    <PackageReference Include="Destructurama.Attributed" Version="2.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
-    <PackageReference Include="NEST" Version="6.5.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
-    <PackageReference Include="Serilog" Version="2.8.0" />
-    <PackageReference Include="Serilog.Exceptions" Version="5.0.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.14.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.5" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.10.8" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="3.1.5" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="bin/Release/netcoreapp2.2/win-x64/publish/*" Pack="True" PackagePath="" />
+    <None Include="bin/Release/netcoreapp3.1/win-x64/publish/*" Pack="True" PackagePath="" />
   </ItemGroup>
 
 </Project>
